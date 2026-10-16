@@ -1,6 +1,6 @@
 {
   "name": "llm-cassette",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Tallenna LLM-kutsujen vastaukset kerran ja toista ne testeissä: nopeat, ilmaiset ja vakaat testit ilman verkkoa. Record/replay for fetch-based LLM clients.",
   "license": "MIT",
   "type": "module",
@@ -21,6 +21,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
