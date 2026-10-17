@@ -37,3 +37,45 @@ jobs:
 
       - name: Audit
         run: npm audit --omit=dev --audit-level=high
+
+  paketti:
+    # Testaa sen, mitä käyttäjä oikeasti saa npm:stä: pakkaa, asenna puhtaaseen kansioon, aja.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Asenna, käännä ja pakkaa
+        run: |
+          npm ci
+          npm pack --pack-destination "$RUNNER_TEMP"
+
+      - name: Asenna paketti puhtaaseen kansioon ja aja record/replay-kierros
+        run: |
+          mkdir "$RUNNER_TEMP/asennus" && cd "$RUNNER_TEMP/asennus"
+          npm init -y > /dev/null
+          npm pkg set type=module
+          npm install "$RUNNER_TEMP"/tonyweckstrom-llm-cassette-*.tgz
+          cat > kierros.mjs <<'JS'
+          import { cassetteFetch, CassetteMissError } from "@tonyweckstrom/llm-cassette";
+          const polku = "kasetti/c.json";
+          const oikea = async () => new Response(JSON.stringify({ text: "moi" }), { status: 200, headers: { "content-type": "application/json" } });
+          const pyynto = { method: "POST", headers: { authorization: "Bearer salainen" }, body: JSON.stringify({ model: "m", prompt: "hei" }) };
+          const rec = cassetteFetch({ path: polku, mode: "record", fetch: oikea });
+          await (await rec("http://llm.local/v1/chat/completions", pyynto)).json();
+          const kielletty = async () => { throw new Error("verkkoa ei saa kayttaa"); };
+          const rep = cassetteFetch({ path: polku, mode: "replay", fetch: kielletty });
+          const v = await (await rep("http://llm.local/v1/chat/completions", pyynto)).json();
+          if (v.text !== "moi") throw new Error("toisto epaonnistui");
+          let puuttuva = false;
+          try { await rep("http://llm.local/v1/chat/completions", { ...pyynto, body: "{}" }); } catch (e) { puuttuva = e instanceof CassetteMissError; }
+          if (!puuttuva) throw new Error("puuttuvan tallenteen pitaa heittaa CassetteMissError");
+          const tiedosto = (await import("node:fs")).readFileSync(polku, "utf8");
+          if (tiedosto.includes("salainen")) throw new Error("avain vuosi tiedostoon");
+          console.log("OK");
+          JS
+          node kierros.mjs

@@ -8,10 +8,18 @@ Tallenna LLM-kutsujen vastaukset kerran ja toista ne testeissä. Testit ovat sil
 
 **Teknologiat:** TypeScript, Node.js 22/24, vitest. Ei ajonaikaisia riippuvuuksia.
 
+## Asennus
+
+```bash
+npm install --save-dev @tonyweckstrom/llm-cassette
+```
+
+Node 22.12+ tai 24. Ei ajonaikaisia riippuvuuksia. (Nimi on scopattu, koska `llm-cassette` on jo toisen julkaisemana npm:ssä: se on eri työkalu.)
+
 ## Käyttö
 
 ```ts
-import { cassetteFetch } from "llm-cassette";
+import { cassetteFetch } from "@tonyweckstrom/llm-cassette";
 
 const fetchWithCassette = cassetteFetch({ path: "test/cassettes/yleinen.json" });
 
@@ -60,6 +68,23 @@ Tallenne löytyy menetelmän (GET/POST), URL:n ja JSON-rungon perusteella. JSON-
 - Pyyntöotsikoita (esim. `Authorization`) **ei koskaan tallenneta** eikä niitä käytetä tunnisteen laskentaan. Vastauksista tallennetaan vain `content-type`.
 - Pyynnön runko (prompti) **tallennetaan**, jotta cassetten voi lukea ja tarkistaa. Älä laita testipromptiin salaisuuksia tai henkilötietoja.
 - Tarkista cassette ennen commitointia: vastausten runkoja ei suodateta.
+
+## Vaihtoehtoja ja miksi tämä
+
+Tilanne 16.10.2026. LLM-kutsujen tallennukseen ja toistoon on jo muitakin työkaluja:
+
+- Toisen kehittäjän npm-paketti nimeltä `llm-cassette` (README:ssä tuote on nimeltä llm-vcr) tallentaa ja toistaa LLM-kutsut testeissä, tukee striimausta ja sumeaa pyyntöjen täsmäystä, ja kytkeytyy testeihin globaalisti (käyttää `msw`-kirjastoa).
+- [`@copilotkit/aimock`](https://www.npmjs.com/package/@copilotkit/aimock) on laaja mock-infrastruktuuri tekoälysovellusten testaukseen: paikallinen palvelin, joka vastaa monen palveluntarjoajan puolesta, sekä tallennus ja toisto.
+- [`@pollyjs/core`](https://www.npmjs.com/package/@pollyjs/core) on yleiskäyttöinen HTTP-tallennus ja -toisto (ei LLM-erityinen).
+
+llm-cassette on tarkoituksella pieni ja eksplisiittinen, jos tarvitset vain yhden asian: toistaa tallennetut vastaukset `fetch`-pohjaiselle LLM-asiakkaalle ilman verkkoa. Erot:
+
+- **Ei globaalia kytkentää:** annat `cassetteFetch`:n asiakkaasi `fetch`-funktioksi. Mikään ei muutu itsestään.
+- **Nolla ajonaikaista riippuvuutta**, koko toteutus on yksi lähdetiedosto.
+- **Turvallinen oletus:** oletustila on `replay`, joka ei koskaan käytä verkkoa, joten unohtunut asetus ei aiheuta maksullisia kutsuja.
+- **Otsikoita ei tallenneta** (esim. `Authorization`), eikä niitä käytetä tunnisteen laskentaan.
+
+Jos tarvitset striimausta (`stream: true`) tai sumeaa täsmäystä, käytä jotakin yllä olevista: tämä työkalu ei tue niitä.
 
 ## Rajoitukset
 
