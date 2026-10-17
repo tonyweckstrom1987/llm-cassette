@@ -1,10 +1,29 @@
 {
-  "name": "llm-cassette",
-  "version": "0.1.1",
+  "name": "@tonyweckstrom/llm-cassette",
+  "version": "0.2.0",
   "description": "Tallenna LLM-kutsujen vastaukset kerran ja toista ne testeissä: nopeat, ilmaiset ja vakaat testit ilman verkkoa. Record/replay for fetch-based LLM clients.",
   "license": "MIT",
+  "author": "Tony Weckström",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tonyweckstrom1987/llm-cassette.git"
+  },
+  "homepage": "https://github.com/tonyweckstrom1987/llm-cassette#readme",
+  "bugs": {
+    "url": "https://github.com/tonyweckstrom1987/llm-cassette/issues"
+  },
+  "keywords": [
+    "llm",
+    "testing",
+    "record",
+    "replay",
+    "vcr",
+    "cassette",
+    "fetch",
+    "openai",
+    "litellm"
+  ],
   "type": "module",
-  "private": true,
   "engines": {
     "node": "^22.12.0 || ^24.0.0"
   },
@@ -23,11 +42,15 @@
     "build": "tsc -p tsconfig.json",
     "prepare": "npm run build",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run typecheck && npm test"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
     "typescript": "^7.0.2",
     "vitest": "^5.0.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
