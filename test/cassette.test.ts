@@ -83,7 +83,7 @@ describe("llm-cassette", () => {
   });
 
   it("tuntematon tila hylätään", () => {
-    expect(() => cassetteFetch({ path, mode: "joku" as never })).toThrow(/tuntematon tila/);
+    expect(() => cassetteFetch({ path, mode: "joku" as never })).toThrow(/unknown mode/);
   });
 
   it("auto: toistaa löytyvän ja tallentaa puuttuvan", async () => {
@@ -170,9 +170,9 @@ describe("llm-cassette", () => {
 
   it("rikkinäinen tai vieras cassette-tiedosto antaa selkeän virheen", () => {
     writeFileSync(join(dir, "huono.json"), "{ ei json");
-    expect(() => cassetteFetch({ path: join(dir, "huono.json"), mode: "replay" })).toThrow(/ei ole kelvollista JSON/);
+    expect(() => cassetteFetch({ path: join(dir, "huono.json"), mode: "replay" })).toThrow(/is not valid JSON/);
     writeFileSync(join(dir, "vieras.json"), JSON.stringify({ version: 99, entries: [] }));
-    expect(() => cassetteFetch({ path: join(dir, "vieras.json"), mode: "replay" })).toThrow(/ei ole tuettu/);
+    expect(() => cassetteFetch({ path: join(dir, "vieras.json"), mode: "replay" })).toThrow(/is not a supported cassette format/);
   });
 
   it("requestKey on vakaa ja erottaa metodin", () => {
@@ -214,6 +214,7 @@ describe("llm-cassette", () => {
     const err = await rep("http://llm.local/g?key=SECRET123", { method: "GET" }).catch((e) => e);
     expect(err).toBeInstanceOf(CassetteMissError);
     expect(String(err.message)).not.toContain("SECRET123");
+    expect(err.message).toMatch(/^llm-cassette: no recording found for GET /);
   });
 
   it("Authorization- ja x-api-key-otsakkeet eivat tallennu", async () => {

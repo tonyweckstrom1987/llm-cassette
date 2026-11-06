@@ -4,6 +4,10 @@ Muoto perustuu [Keep a Changelogiin](https://keepachangelog.com/fi/1.0.0/), ja v
 
 ## [Julkaisematon]
 
+### Muutettu
+
+- Virheilmoitukset ovat nyt englanniksi (`CassetteMissError` ja cassette-tiedoston, tilan ja pyynnön rungon virheet). Virheluokan nimi ja viestin `llm-cassette:`-alku säilyvät. Jos koodisi vertaa viestin suomenkielistä tekstiä, päivitä vertailu.
+
 ### Lisätty
 
 - Testi `test/nauhat-salaisuudet.test.ts` kaataa CI:n, jos repossa oleva cassette-tiedosto sisältää maskaamattoman URL-avaimen, salaisuusotsakkeen, Bearer-tunnisteen tai tunnetun avaimen muotoisen merkkijonon.

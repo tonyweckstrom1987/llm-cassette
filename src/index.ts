@@ -33,8 +33,8 @@ export interface CassetteOptions {
 export class CassetteMissError extends Error {
   constructor(public readonly method: string, public readonly url: string, public readonly path: string) {
     super(
-      `llm-cassette: tallennetta ei löytynyt pyynnölle ${method} ${url} (tiedosto ${path}). ` +
-        `Aja kerran LLM_CASSETTE_MODE=record, jotta vastaus tallentuu.`,
+      `llm-cassette: no recording found for ${method} ${url} (file ${path}). ` +
+        `Run once with LLM_CASSETTE_MODE=record to save the response.`,
     );
     this.name = "CassetteMissError";
   }
@@ -92,11 +92,11 @@ function loadFile(path: string): CassetteFile {
   try {
     parsed = JSON.parse(readFileSync(path, "utf8"));
   } catch (err) {
-    throw new Error(`llm-cassette: tiedosto '${path}' ei ole kelvollista JSON:ia: ${err instanceof Error ? err.message : String(err)}`);
+    throw new Error(`llm-cassette: file '${path}' is not valid JSON: ${err instanceof Error ? err.message : String(err)}`);
   }
   const f = parsed as Partial<CassetteFile>;
   if (f?.version !== 1 || !Array.isArray(f.entries)) {
-    throw new Error(`llm-cassette: tiedosto '${path}' ei ole tuettu cassette-muoto (odotettiin version 1)`);
+    throw new Error(`llm-cassette: file '${path}' is not a supported cassette format (expected version 1)`);
   }
   return f as CassetteFile;
 }
@@ -111,7 +111,7 @@ function saveFile(path: string, data: CassetteFile): void {
 function resolveMode(mode: CassetteMode | undefined): CassetteMode {
   const m = mode ?? process.env.LLM_CASSETTE_MODE ?? "replay";
   if (m !== "replay" && m !== "record" && m !== "auto") {
-    throw new Error(`llm-cassette: tuntematon tila '${m}' (sallitut: replay, record, auto)`);
+    throw new Error(`llm-cassette: unknown mode '${m}' (allowed: replay, record, auto)`);
   }
   return m;
 }
@@ -132,7 +132,7 @@ async function requestBody(input: RequestInfo | URL, init?: RequestInit): Promis
   const b = init?.body ?? (input instanceof Request ? await input.clone().text() : undefined);
   if (b === undefined || b === null) return null;
   if (typeof b === "string") return b;
-  throw new Error("llm-cassette: vain merkkijonorunko (JSON) tuetaan; saatiin " + Object.prototype.toString.call(b));
+  throw new Error("llm-cassette: only string (JSON) request bodies are supported; got " + Object.prototype.toString.call(b));
 }
 
 /** Palauttaa fetch-yhteensopivan funktion, joka tallentaa tai toistaa vastaukset. */
