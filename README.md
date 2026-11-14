@@ -33,7 +33,7 @@ const res = await fetchWithCassette("https://litellm.local/v1/chat/completions",
 });
 ```
 
-The first run records the responses, later runs replay them:
+Recording needs `record` mode (the default `replay` mode throws `CassetteMissError` when there is no recording). After that, runs replay the recorded responses:
 
 ```bash
 LLM_CASSETTE_MODE=record npm test   # once, with a real key: records into the cassette
@@ -63,7 +63,7 @@ The mode is chosen with the `mode` option or the `LLM_CASSETTE_MODE` environment
 
 ## How a request is identified
 
-A recording is found by the method (GET/POST), the URL and the JSON body. The order of JSON fields does not matter. Headers do not matter, so changing the API key does not break recordings. If the same request has been recorded several times (e.g. a retry), the responses are replayed in the recorded order and the last one repeats after that.
+A recording is found by the HTTP method, the URL and the JSON body. The order of JSON fields does not matter. Headers do not matter, so changing the API key does not break recordings. If the same request has been recorded several times (e.g. a retry), the responses are replayed in the recorded order and the last one repeats after that.
 
 ## Security
 
