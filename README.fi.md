@@ -33,7 +33,7 @@ const res = await fetchWithCassette("https://litellm.local/v1/chat/completions",
 });
 ```
 
-Ensimmäinen ajo tallentaa vastaukset, seuraavat toistavat ne:
+Tallentaminen vaatii `record`-tilan (oletustila `replay` heittää `CassetteMissError`-virheen, jos tallennetta ei ole). Sen jälkeen ajot toistavat tallennetut vastaukset:
 
 ```bash
 LLM_CASSETTE_MODE=record npm test   # kerran, oikealla avaimella: tallentaa cassetteen
@@ -63,7 +63,7 @@ Tila valitaan `mode`-asetuksella tai ympäristömuuttujalla `LLM_CASSETTE_MODE`.
 
 ## Miten pyyntö tunnistetaan
 
-Tallenne löytyy menetelmän (GET/POST), URL:n ja JSON-rungon perusteella. JSON-kenttien järjestyksellä ei ole väliä. Otsikoilla ei ole väliä, joten API-avaimen vaihtaminen ei riko tallenteita. Jos sama pyyntö on tallennettu useasti (esim. uudelleenyritys), vastaukset toistetaan tallennetussa järjestyksessä ja viimeinen toistuu sen jälkeen.
+Tallenne löytyy HTTP-menetelmän, URL:n ja JSON-rungon perusteella. JSON-kenttien järjestyksellä ei ole väliä. Otsikoilla ei ole väliä, joten API-avaimen vaihtaminen ei riko tallenteita. Jos sama pyyntö on tallennettu useasti (esim. uudelleenyritys), vastaukset toistetaan tallennetussa järjestyksessä ja viimeinen toistuu sen jälkeen.
 
 ## Turvallisuus
 
